@@ -1,12 +1,49 @@
 import datetime
 import json
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view
 
 from .models import *
 from django.http import JsonResponse
 from .utils import *
+from django.contrib.auth import authenticate, login, logout
+from django.contrib import messages
 
+from django.shortcuts import render, redirect
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login, authenticate
+from django.contrib import messages
+
+def create_user(request):
+    if request.method == 'POST':
+        username = request.POST.get("username")
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        user, created = Users.objects.get_or_create(username=username, email=email, password=password)
+        return render(request, 'store/login.html')
+    return render(request, 'store/register.html')
+
+
+def check_login(request):
+    if request.method == 'POST':
+        # Lấy dữ liệu từ request
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+
+        # Kiểm tra username và password
+        user = Users.objects.filter(email=email, password=password)
+        if len(user) > 0:
+            # Nếu hợp lệ, trả về status OK
+            return redirect('/store', {'email': email})
+        else:
+            # Nếu không hợp lệ, trả về status Failed
+            return render(request, 'store/login.html')
+    return render(request, 'store/login.html')
+
+def logout_view(request):
+    logout(request)
+    return redirect('/store')
 
 # Create your views here.
 def store(request):
@@ -92,3 +129,8 @@ def processOrder(request):
         )
 
     return JsonResponse('Payment submitted ... ', safe=False)
+
+def search(request):
+    query = request.GET.get('query')
+    products = Product.objects.filter(name__icontains=query)
+    return render(request, 'store/store.html', {'products': products})

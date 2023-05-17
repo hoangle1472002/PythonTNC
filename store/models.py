@@ -1,5 +1,14 @@
 from django.db import models
 from django.contrib.auth.models import User
+class Users(models.Model):
+    userid = models.AutoField(db_column='UserID', primary_key=True)  # Field name made lowercase.
+    username = models.CharField(db_column='UserName', max_length=50)  # Field name made lowercase.
+    email = models.CharField(db_column='Email', max_length=100)  # Field name made lowercase.
+    password = models.CharField(db_column='Password', max_length=100)  # Field name made lowercase.
+
+    class Meta:
+        managed = True
+        db_table = 'users'
 
 class Customer(models.Model) :
     user  = models.OneToOneField(User,on_delete=models.CASCADE,null = True, blank=True)
